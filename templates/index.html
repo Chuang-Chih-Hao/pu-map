@@ -3,22 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>靜宜新生防迷路地圖</title>
+    <title>靜宜新生防迷路地圖 ＆ 揪團大廳</title>
     <style>
         body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        /* 頂部導覽列 */
         .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
         .top-nav a { padding: 10px 20px; background-color: #f8f9fa; color: #333; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; border: 1px solid #ddd; transition: all 0.2s ease; }
         .top-nav a:hover { background-color: #e8eaed; color: #1a73e8; border-color: #1a73e8; transform: translateY(-2px); }
         h1 { color: #1a73e8; margin-top: 0; margin-bottom: 20px; }
+        
+        /* 搜尋框 */
         .search-box { margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; }
-        input { padding: 12px; width: 60%; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { padding: 12px 24px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        #map { height: 500px; width: 100%; border-radius: 10px; margin-bottom: 30px; }
-        .campus-img-section { border-top: 2px solid #eee; padding-top: 30px; }
-        .campus-img-section img { width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); image-rendering: -webkit-optimize-contrast; image-rendering: high-quality; }
-        #loading { display: none; color: #d93025; font-weight: bold; margin-bottom: 10px; }
-        @media (max-width: 768px) { .top-nav { flex-direction: column; gap: 10px; } #map { height: 350px; } input { width: 50%; } }
+        input[type="text"] { padding: 12px; width: 60%; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-primary { padding: 12px 24px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* 左右版面配置 */
+        .main-layout { display: flex; gap: 20px; margin-bottom: 30px; text-align: left; }
+        
+        /* 左側地圖區 */
+        #map-container { flex: 2; display: flex; flex-direction: column; }
+        #map { height: 500px; width: 100%; border-radius: 10px; flex-grow: 1; border: 1px solid #ddd;}
+        
+        /* 右側揪團側邊欄 */
+        .group-sidebar { flex: 1; background: #f8f9fa; border: 1px solid #ddd; border-radius: 10px; padding: 15px; display: flex; flex-direction: column; max-height: 500px; }
+        .group-sidebar h3 { margin-top: 0; color: #d93025; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .group-list { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
+        
+        /* 揪團卡片樣式 */
+        .group-card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid #d93025; }
+        .group-card strong { display: block; font-size: 16px; margin-bottom: 5px; color: #333; }
+        .group-card small { color: #666; font-size: 13px; display: block; margin-bottom: 10px; }
+        .group-card .btn-nav { background: #e8f0fe; color: #1a73e8; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; width: 100%; transition: background 0.2s;}
+        .group-card .btn-nav:hover { background: #d2e3fc; }
+        
+        /* 創建揪團表單 */
+        .create-group-box { border-top: 1px solid #ddd; padding-top: 15px; }
+        .create-group-box input, .create-group-box select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .btn-success { width: 100%; padding: 12px; background: #34a853; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+        .btn-success:hover { background: #2b8c46; }
+
+        /* 圖片區塊 */
+        .campus-img-section { border-top: 2px solid #eee; padding-top: 30px; text-align: center; }
+        .campus-img-section img { width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #loading { display: none; color: #d93025; font-weight: bold; margin-bottom: 10px; text-align: center; }
+
+        /* 手機版響應式設計 */
+        @media (max-width: 850px) { 
+            .top-nav { flex-direction: column; gap: 10px; } 
+            .main-layout { flex-direction: column; }
+            #map { height: 400px; } 
+            input[type="text"] { width: 55%; }
+            .group-sidebar { max-height: none; }
+        }
     </style>
 </head>
 <body>
@@ -27,14 +65,38 @@
             <a href="https://www.pu.edu.tw/index.php" target="_blank">🎓 靜宜大學首頁</a>
             <a href="https://alcat.pu.edu.tw/" target="_blank">💻 e校園服務網</a>
         </div>
-        <h1>靜宜新生防迷路地圖</h1>
+        
+        <h1>靜宜新生防迷路地圖 ＆ 揪團大廳</h1>
+        
         <div class="search-box">
             <input type="text" id="roomInput" placeholder="輸入代碼(AK)、科系(社工系) 或 想做的事" onkeypress="handleEnter(event)">
-            <button onclick="searchRoom()">帶我去</button>
+            <button class="btn-primary" onclick="searchRoom()">帶我去</button>
         </div>
         <div id="loading">🤖 AI 正在為您帶路...</div>
-        <div id="map"></div>
-        <div class="campus-img-section">
+
+        <div class="main-layout">
+            
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+
+            <div class="group-sidebar">
+                <h3>🔥 限時揪團 <span style="font-size: 13px; font-weight: normal; color: #666;">(30分鐘後消失)</span></h3>
+                
+                <div class="group-list" id="groupList">
+                    <p style="text-align: center; color: #999; font-size: 14px; margin-top: 30px;">目前沒有揪團，來發起一個吧！</p>
+                </div>
+
+                <div class="create-group-box">
+                    <input type="text" id="groupTitle" placeholder="標題：缺二打排球、圖書館揪伴">
+                    <select id="groupLocation">
+                        <option value="">選擇集合地點...</option>
+                        </select>
+                    <button class="btn-success" onclick="createNewGroup()">📢 發起揪團 (時效 30 分鐘)</button>
+                </div>
+            </div>
+            
+        </div> <div class="campus-img-section">
             <h3>📍 靜宜大學校園平面圖</h3>
             <img src="{{ url_for('static', filename='map_in_PU.jpg') }}" alt="靜宜校園平面圖">
         </div>
@@ -47,7 +109,7 @@
 
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 16, center: { lat: 24.2272, lng: 120.5810 }, mapTypeControl: false
+                zoom: 16, center: { lat: 24.2272, lng: 120.5810 }, mapTypeControl: false, streetViewControl: false
             });
             infoWindow = new google.maps.InfoWindow();
             directionsService = new google.maps.DirectionsService();
@@ -55,6 +117,7 @@
             trackUserLocation();
         }
 
+        // --- 核心功能：定位與搜尋 ---
         function trackUserLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition((position) => {
@@ -79,6 +142,7 @@
             let isAiGenerated = false;
             const upperInput = input.toUpperCase(); 
 
+            // 本地搜尋
             for (let name in campusData) {
                 const bldg = campusData[name];
                 if (name.includes(input) || (bldg.desc && bldg.desc.toUpperCase().includes(upperInput)) || (bldg.depts && bldg.depts.includes(input))) {
@@ -87,6 +151,7 @@
                 }
             }
 
+            // AI 搜尋
             if (!targetName) {
                 document.getElementById('loading').style.display = 'block';
                 try {
@@ -99,6 +164,7 @@
                 } finally { document.getElementById('loading').style.display = 'none'; }
             }
 
+            // 標記與彈出視窗
             if (targetName && campusData[targetName]) {
                 const loc = campusData[targetName];
                 const pos = { lat: loc.lat, lng: loc.lng };
@@ -110,12 +176,12 @@
                 const aiBadge = isAiGenerated ? '<span style="background-color: #ffeeba; color: #856404; font-size: 12px; padding: 2px 5px; border-radius: 3px; margin-left: 5px;">🤖 AI推薦</span>' : '';
                 
                 infoWindow.setContent(`
-                    <div style="padding:10px; color:black;">
-                        <h3 style="margin:0; display: flex; align-items: center;">${targetName} ${aiBadge}</h3>
-                        <p style="margin: 5px 0 10px 0; font-size: 13px; color: #666;">${loc.desc}</p>
-                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <div style="padding:10px; color:black; text-align:center;">
+                        <h3 style="margin:0; display: flex; align-items: center; justify-content: center;">${targetName} ${aiBadge}</h3>
+                        <p style="margin: 5px 0 10px 0; font-size: 13px; color: #666;">${loc.desc || ''}</p>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
                             <button onclick="nav(${loc.lat},${loc.lng})" style="background:#1a73e8; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight: bold;">🚶 網頁規劃路線</button>
-                            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=walking" target="_blank" style="background:#28a745; color:white; text-decoration:none; padding:8px; border-radius:4px; text-align:center; font-weight:bold; font-size:13px;">📱 打開 Google Maps App</a>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=walking" target="_blank" style="background:#28a745; color:white; text-decoration:none; padding:8px; border-radius:4px; font-weight:bold; font-size:13px; display:block;">📱 打開 Google Maps App</a>
                         </div>
                     </div>
                 `);
@@ -135,9 +201,106 @@
                     if (status === 'OK') { directionsRenderer.setDirections(result); infoWindow.close(); }
                     else { alert("規劃失敗！請確認已啟動 Directions API。代碼：" + status); }
                 });
-            }, () => { alert("獲取位置失敗，請確認已開啟 GPS。"); }, { enableHighAccuracy: true });
+            }, () => { alert("獲取位置失敗，請確認已開啟手機定位(GPS)並允許網頁存取。"); }, { enableHighAccuracy: true });
         }
         function handleEnter(e) { if (e.key === 'Enter') searchRoom(); }
+
+
+        // --- 揪團大廳功能 ---
+        function initLocationSelect() {
+            const select = document.getElementById('groupLocation');
+            for (let loc in campusData) {
+                let option = document.createElement('option');
+                option.value = loc;
+                option.text = loc;
+                select.appendChild(option);
+            }
+        }
+
+        async function fetchGroups() {
+            try {
+                const res = await fetch('/api/groups');
+                const groups = await res.json();
+                renderGroups(groups);
+            } catch (e) {
+                console.error("無法載入揪團資訊");
+            }
+        }
+
+        function renderGroups(groups) {
+            const listDiv = document.getElementById('groupList');
+            if (groups.length === 0) {
+                listDiv.innerHTML = '<p style="text-align: center; color: #999; font-size: 14px; margin-top: 30px;">目前沒有揪團，來發起一個吧！</p>';
+                return;
+            }
+
+            listDiv.innerHTML = '';
+            groups.forEach(g => {
+                const timeLeft = Math.floor((g.expires_at - (Date.now() / 1000)) / 60);
+                const locData = campusData[g.location];
+                
+                const card = document.createElement('div');
+                card.className = 'group-card';
+                card.innerHTML = `
+                    <strong>${g.title}</strong>
+                    <small>📍 ${g.location} (剩 ${Math.max(1, timeLeft)} 分鐘消失)</small>
+                    <button class="btn-nav" onclick="navToGroup('${g.location}', ${locData.lat}, ${locData.lng})">
+                        🚶 帶我過去會合
+                    </button>
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        async function createNewGroup() {
+            const title = document.getElementById('groupTitle').value.trim();
+            const location = document.getElementById('groupLocation').value;
+
+            if (!title) return alert("請輸入揪團標題 (例如：缺二打排球)");
+            if (!location) return alert("請選擇集合地點");
+
+            try {
+                const res = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title, location })
+                });
+                if (res.ok) {
+                    document.getElementById('groupTitle').value = ''; 
+                    fetchGroups(); 
+                } else {
+                    alert("發起失敗，伺服器可能有點累了。");
+                }
+            } catch (e) {
+                alert("網路連線異常，請稍後再試。");
+            }
+        }
+
+        function navToGroup(locationName, lat, lng) {
+            const pos = { lat: lat, lng: lng };
+            if (currentMarker) currentMarker.setMap(null);
+            map.panTo(pos);
+            map.setZoom(18);
+            currentMarker = new google.maps.Marker({ position: pos, map: map, animation: google.maps.Animation.DROP });
+            
+            // 標記後顯示提示文字，並直接開始規劃路線
+            infoWindow.setContent(`
+                <div style="padding:10px; text-align:center;">
+                    <h3 style="margin:0 0 10px 0;">📍 ${locationName}</h3>
+                    <p style="margin:0; font-weight:bold; color:#d93025;">揪團會合點</p>
+                </div>
+            `);
+            infoWindow.open(map, currentMarker);
+            nav(lat, lng);
+        }
+
+        // 啟動與定時更新
+        window.onload = () => {
+            initLocationSelect();
+            fetchGroups();
+            // 每 15 秒重新抓一次資料，讓倒數時間看起來是活的
+            setInterval(fetchGroups, 15000); 
+        };
     </script>
 </body>
 </html>
