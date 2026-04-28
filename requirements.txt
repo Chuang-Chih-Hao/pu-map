@@ -1,2 +1,4 @@
 flask
 google-generativeai
+flask-socketio
+eventlet
