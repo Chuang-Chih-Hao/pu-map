@@ -36,7 +36,26 @@
         
         /* 揪團清單 */
         #groupView { display: flex; flex-direction: column; height: 100%; }
-        .group-list { flex-grow: 1; overflow-y: auto; padding-right: 8px; margin-bottom: 15px; }
+        /* 升級版揪團清單：固定高度與美化捲軸 */
+        .group-list { 
+            /* 固定最大高度，大約剛好顯示 3 個卡片的高度 */
+            max-height: 380px; 
+            
+            /* 如果內容超過這個高度，就自動產生垂直捲軸 */
+            overflow-y: auto; 
+            
+            padding-right: 8px; 
+            margin-bottom: 15px; 
+            
+            /* 讓剩下的空間不要硬撐開，保持排版緊湊 */
+            flex-grow: 0; 
+        }
+
+        /* 針對 Webkit 瀏覽器 (Chrome/Safari) 美化捲軸，讓它看起來更像 App */
+        .group-list::-webkit-scrollbar { width: 6px; }
+        .group-list::-webkit-scrollbar-track { background: transparent; }
+        .group-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .group-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
         .group-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid var(--accent-red); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .group-card strong { display: block; font-size: 16px; color: #222; margin-bottom: 5px; }
         .group-actions { display: flex; gap: 8px; margin-top: 12px; }
