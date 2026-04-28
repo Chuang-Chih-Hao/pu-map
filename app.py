@@ -18,9 +18,16 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
+import os # 如果最上面沒有 import os，記得補上
+
 # --- 1. 金鑰設定 ---
 GOOGLE_MAPS_API_KEY = "AIzaSyBVas_ZbdGfz7-DM-IU9sd6TGw0cyKRlW0"
-GEMINI_API_KEY = "AIzaSyDVQM4QGRLv8PqZ4bmqnNVSZkLvMRkaf-g"
+
+# 安全取用金鑰：優先從環境變數拿，拿不到才回傳 None
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") 
+
+if not GEMINI_API_KEY:
+    print("⚠️ 嚴重警告：系統找不到 GEMINI_API_KEY 環境變數！AI 功能將無法啟動。")
 
 # --- 2. AI 模型自動偵測 ---
 genai.configure(api_key=GEMINI_API_KEY)
@@ -75,7 +82,7 @@ pu_locations = {
     "第二研究大樓": {"lat": 24.227036, "lng": 120.582479, "desc": "代碼: 2R"},
     "計算機中心": {"lat": 24.226327, "lng": 120.579860, "desc": "代碼: AK-3C"},
     "文興樓": {"lat": 24.227107, "lng": 120.581128, "desc": "行政大樓"},
-    "至善美食廣場": {"lat": 24.228039, "lng": 120.579704, "desc": "主要學餐區"},
+    "至善美食廣場": {"lat": 24.228039, "lng": 120.579704, "desc": "學生餐廳"},
     "宜園餐廳": {"lat": 24.227275, "lng": 120.579522, "desc": "學生餐廳"},
     "靜園餐廳": {"lat": 24.227622, "lng": 120.581652, "desc": "學生餐廳"},
     "靜宜小木屋鬆餅": {"lat": 24.228612, "lng": 120.581368, "desc": "美食小點"},
