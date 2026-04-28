@@ -19,7 +19,7 @@ import google.generativeai as genai
 app = Flask(__name__)
 
 # --- 1. 金鑰安全設定 (從環境變數讀取) ---
-GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
+GOOGLE_MAPS_API_KEY = os.environ.get("Maps_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 if not GOOGLE_MAPS_API_KEY:
