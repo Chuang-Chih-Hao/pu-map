@@ -10,14 +10,13 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; background-color: var(--bg-gray); margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        /* 導覽列 */
+        /* 頂部導航 */
         .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
         .top-nav a { padding: 10px 22px; background: white; color: #555; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 14px; border: 1px solid #ddd; transition: 0.2s; }
         .top-nav a:hover { border-color: var(--primary-blue); color: var(--primary-blue); transform: translateY(-2px); }
-        
         h1 { color: var(--primary-blue); margin: 0 0 25px 0; font-size: 28px; }
 
-        /* 搜尋區塊 */
+        /* 搜尋與快速標籤 */
         .search-section { margin-bottom: 25px; }
         .search-box { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
         input[type="text"] { padding: 14px; width: 60%; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; transition: 0.2s; }
@@ -28,14 +27,14 @@
         .quick-tags button { background: #e8f0fe; color: var(--primary-blue); border: 1px solid #d2e3fc; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; }
         .quick-tags button:hover { background: var(--primary-blue); color: white; }
 
-        /* 主版面：地圖與側邊欄 */
+        /* 主版面 */
         .main-layout { display: flex; gap: 25px; margin-bottom: 35px; text-align: left; }
         #map-container { flex: 2; position: relative; }
         #map { height: 550px; width: 100%; border-radius: 15px; border: 1px solid #eee; }
         
         .sidebar-panel { flex: 1; background: #fafafa; border: 1px solid #eee; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; height: 510px; position: relative; }
         
-        /* 揪團大廳清單 */
+        /* 揪團清單 */
         #groupView { display: flex; flex-direction: column; height: 100%; }
         .group-list { flex-grow: 1; overflow-y: auto; padding-right: 8px; margin-bottom: 15px; }
         .group-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid var(--accent-red); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
@@ -45,7 +44,7 @@
         .btn-sm-nav { background: #e8f0fe; color: var(--primary-blue); }
         .btn-sm-chat { background: #fff3cd; color: #856404; }
 
-        /* 聊天室介面 */
+        /* 聊天室 */
         #chatView { display: none; flex-direction: column; height: 100%; background: white; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
         .chat-header { background: var(--accent-red); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         .chat-header button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
@@ -57,7 +56,7 @@
         .chat-input input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
         .chat-input button { padding: 0 18px; background: var(--primary-blue); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
 
-        /* 靜態圖片區 */
+        /* 平面圖圖片 */
         .campus-img-section { border-top: 2px solid #eee; padding-top: 40px; margin-top: 20px; }
         .campus-img-section img { width: 100%; max-width: 700px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
@@ -136,7 +135,7 @@
             directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
         }
 
-        // --- 核心搜尋與自動完成 ---
+        // --- 1. 搜尋自動完成功能 ---
         function initSearchSuggestions() {
             const datalist = document.getElementById('searchSuggestions');
             let suggestions = new Set();
@@ -149,20 +148,25 @@
 
         function quickSearch(k) { document.getElementById('roomInput').value = k; searchRoom(); }
 
+        // --- 2. 核心搜尋與導航邏輯 ---
         async function searchRoom() {
             const input = document.getElementById('roomInput').value.trim();
             if (!input) return;
             let targetName = null;
             let isAiGenerated = false;
-            const upperInput = input.toUpperCase();
+            const searchStr = input.toLowerCase();
 
+            // 本地搜尋 (優化過的比對邏輯)
             for (let name in campusData) {
                 const bldg = campusData[name];
-                if (name.includes(input) || (bldg.desc && bldg.desc.toUpperCase().includes(upperInput)) || (bldg.depts && bldg.depts.includes(input))) {
+                if (name.toLowerCase().includes(searchStr) || 
+                   (bldg.desc && bldg.desc.toLowerCase().includes(searchStr)) || 
+                   (bldg.depts && bldg.depts.toLowerCase().includes(searchStr))) {
                     targetName = name; break;
                 }
             }
 
+            // AI 語意搜尋
             if (!targetName) {
                 const btn = document.querySelector('.btn-primary');
                 btn.innerText = "🤖 AI 思考中...";
@@ -190,11 +194,11 @@
                     </div>
                 `);
                 infoWindow.open(map, currentMarker);
-            } else { alert("找不到地點！"); }
+            } else { alert("找不到地點，請換個說法！"); }
         }
 
         function nav(lat, lng) {
-            if (!navigator.geolocation) return alert("不支援定位");
+            if (!navigator.geolocation) return alert("您的設備不支援定位功能。");
             navigator.geolocation.getCurrentPosition(pos => {
                 directionsRenderer.setDirections({routes: []});
                 directionsService.route({
@@ -203,11 +207,12 @@
                     travelMode: 'WALKING'
                 }, (result, status) => {
                     if (status === 'OK') { directionsRenderer.setDirections(result); infoWindow.close(); }
+                    else { alert("路線規劃失敗，代碼：" + status); }
                 });
             }, () => alert("定位請求失敗，請確認已開啟 GPS"), { enableHighAccuracy: true });
         }
 
-        // --- 揪團大廳與即時聊天 ---
+        // --- 3. 揪團與即時聊天邏輯 ---
         function initLocationSelect() {
             const select = document.getElementById('groupLocation');
             for (let loc in campusData) select.appendChild(new Option(loc, loc));
@@ -232,7 +237,7 @@
         }
 
         async function createNewGroup() {
-            const title = document.getElementById('groupTitle').value;
+            const title = document.getElementById('groupTitle').value.trim();
             const location = document.getElementById('groupLocation').value;
             if (!title || !location) return alert("請填寫標題與地點");
             await fetch('/api/groups', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ title, location }) });
@@ -265,11 +270,18 @@
             const div = document.createElement('div');
             const isMe = d.user === myUsername;
             div.className = `msg-bubble ${isMe ? 'msg-self' : 'msg-other'}`;
-            div.innerHTML = isMe ? d.msg : `<div style="font-size:10px;margin-bottom:3px;color:#777;">${d.user}</div>${d.msg}`;
+            div.innerHTML = isMe ? d.msg : `<div style="font-size:10px;margin-bottom:3px;color:#888;">${d.user}</div>${d.msg}`;
             box.appendChild(div);
         }
 
-        window.onload = () => { initLocationSelect(); initSearchSuggestions(); fetchGroups(); setInterval(fetchGroups, 15000); };
+        // 初始化
+        window.onload = () => { 
+            initMap();
+            initLocationSelect(); 
+            initSearchSuggestions(); 
+            fetchGroups(); 
+            setInterval(fetchGroups, 15000); 
+        };
     </script>
 </body>
 </html>
