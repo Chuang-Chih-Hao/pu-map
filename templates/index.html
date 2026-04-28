@@ -50,6 +50,10 @@
         .chat-input input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
         .chat-input button { padding: 8px 15px; background: #1a73e8; color: white; border: none; border-radius: 20px; cursor: pointer; }
 
+        /* 圖片區塊 */
+        .campus-img-section { border-top: 2px solid #eee; padding-top: 30px; text-align: center; }
+        .campus-img-section img { width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
         @media (max-width: 850px) { 
             .main-layout { flex-direction: column; }
             #map { height: 400px; } 
@@ -98,6 +102,11 @@
                 </div>
 
             </div>
+        </div>
+
+        <div class="campus-img-section">
+            <h3 style="color: #1a73e8; border-bottom: 2px solid #eee; padding-bottom: 10px;">📍 靜宜大學校園平面圖</h3>
+            <img src="{{ url_for('static', filename='map_in_PU.jpg') }}" alt="靜宜校園平面圖">
         </div>
     </div>
 
