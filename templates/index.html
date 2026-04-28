@@ -10,7 +10,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; background-color: var(--bg-gray); margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        /* 頂部導航 */
+        /* 導覽列 */
         .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
         .top-nav a { padding: 10px 22px; background: white; color: #555; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 14px; border: 1px solid #ddd; transition: 0.2s; }
         .top-nav a:hover { border-color: var(--primary-blue); color: var(--primary-blue); transform: translateY(-2px); }
@@ -32,30 +32,26 @@
         #map-container { flex: 2; position: relative; }
         #map { height: 550px; width: 100%; border-radius: 15px; border: 1px solid #eee; }
         
+        /* 右側面板 (揪團與聊天) */
         .sidebar-panel { flex: 1; background: #fafafa; border: 1px solid #eee; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; height: 510px; position: relative; }
         
-        /* 揪團清單 */
+        /* 揪團清單視圖 */
         #groupView { display: flex; flex-direction: column; height: 100%; }
-        /* 升級版揪團清單：固定高度與美化捲軸 */
+        
+        /* ✅ 修正重點：限制揪團清單高度並加入美化捲軸 */
         .group-list { 
-            /* 固定最大高度，大約剛好顯示 3 個卡片的高度 */
-            max-height: 380px; 
-            
-            /* 如果內容超過這個高度，就自動產生垂直捲軸 */
+            max-height: 380px; /* 大約顯示 3 則訊息的高度 */
             overflow-y: auto; 
-            
             padding-right: 8px; 
             margin-bottom: 15px; 
-            
-            /* 讓剩下的空間不要硬撐開，保持排版緊湊 */
             flex-grow: 0; 
         }
-
-        /* 針對 Webkit 瀏覽器 (Chrome/Safari) 美化捲軸，讓它看起來更像 App */
+        /* 自訂滾動條樣式 (適用於 Chrome/Safari) */
         .group-list::-webkit-scrollbar { width: 6px; }
         .group-list::-webkit-scrollbar-track { background: transparent; }
         .group-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
         .group-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
         .group-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid var(--accent-red); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .group-card strong { display: block; font-size: 16px; color: #222; margin-bottom: 5px; }
         .group-actions { display: flex; gap: 8px; margin-top: 12px; }
@@ -63,10 +59,13 @@
         .btn-sm-nav { background: #e8f0fe; color: var(--primary-blue); }
         .btn-sm-chat { background: #fff3cd; color: #856404; }
 
-        /* 聊天室 */
+        /* 發起揪團表單 */
+        .create-group-box { border-top: 1px solid #eee; padding-top: 15px; margin-top: auto; }
+
+        /* 聊天室視圖 */
         #chatView { display: none; flex-direction: column; height: 100%; background: white; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
         .chat-header { background: var(--accent-red); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .chat-header button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .chat-header button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;}
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fdfdfd; }
         .msg-bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; max-width: 85%; line-height: 1.4; }
         .msg-self { align-self: flex-end; background: var(--primary-blue); color: white; border-bottom-right-radius: 4px; }
@@ -75,8 +74,8 @@
         .chat-input input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
         .chat-input button { padding: 0 18px; background: var(--primary-blue); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
 
-        /* 平面圖圖片 */
-        .campus-img-section { border-top: 2px solid #eee; padding-top: 40px; margin-top: 20px; }
+        /* 靜態圖片區 */
+        .campus-img-section { border-top: 2px solid #eee; padding-top: 40px; margin-top: 20px; text-align: center;}
         .campus-img-section img { width: 100%; max-width: 700px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
         @media (max-width: 900px) { .main-layout { flex-direction: column; } #map { height: 400px; } .sidebar-panel { height: auto; min-height: 500px; } input[type="text"] { width: 50%; } }
@@ -109,10 +108,12 @@
             <div id="map-container"><div id="map"></div></div>
 
             <div class="sidebar-panel">
+                
                 <div id="groupView">
                     <h3>🔥 限時揪團 <span style="font-size: 12px; font-weight: normal; color: #888;">(30分後消失)</span></h3>
                     <div class="group-list" id="groupList"></div>
-                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                    
+                    <div class="create-group-box">
                         <input type="text" id="groupTitle" placeholder="標題：缺二打排球" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
                         <select id="groupLocation" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;"></select>
                         <button style="width:100%; padding:12px; background:#34a853; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="createNewGroup()">📢 發起揪團</button>
@@ -138,7 +139,8 @@
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap" async defer></script>
     <script>
-        let map, currentMarker, directionsRenderer, directionsService, infoWindow;
+        // ✅ 修正重點：確保宣告了 userMarker
+        let map, currentMarker, directionsRenderer, directionsService, infoWindow, userMarker;
         const campusData = {{ locations | tojson | safe }};
         const socket = io();
         let currentGroupId = null;
@@ -152,9 +154,32 @@
             infoWindow = new google.maps.InfoWindow();
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+            
+            // ✅ 啟動使用者定位追蹤
+            trackUserLocation();
         }
 
-        // --- 1. 搜尋自動完成功能 ---
+        // --- 核心定位功能 ---
+        function trackUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition((position) => {
+                    const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    if (!userMarker) {
+                        userMarker = new google.maps.Marker({
+                            position: userPos, map: map,
+                            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 },
+                            title: "你的位置"
+                        });
+                    } else {
+                        userMarker.setPosition(userPos);
+                    }
+                }, (error) => {
+                    console.warn("定位失敗原因：", error.message);
+                }, { enableHighAccuracy: true, timeout: 10000 });
+            }
+        }
+
+        // --- 搜尋自動完成功能 ---
         function initSearchSuggestions() {
             const datalist = document.getElementById('searchSuggestions');
             let suggestions = new Set();
@@ -167,7 +192,7 @@
 
         function quickSearch(k) { document.getElementById('roomInput').value = k; searchRoom(); }
 
-        // --- 2. 核心搜尋與導航邏輯 ---
+        // --- 核心搜尋與導航邏輯 ---
         async function searchRoom() {
             const input = document.getElementById('roomInput').value.trim();
             if (!input) return;
@@ -175,7 +200,7 @@
             let isAiGenerated = false;
             const searchStr = input.toLowerCase();
 
-            // 本地搜尋 (優化過的比對邏輯)
+            // 本地搜尋多欄位容錯比對
             for (let name in campusData) {
                 const bldg = campusData[name];
                 if (name.toLowerCase().includes(searchStr) || 
@@ -231,7 +256,7 @@
             }, () => alert("定位請求失敗，請確認已開啟 GPS"), { enableHighAccuracy: true });
         }
 
-        // --- 3. 揪團與即時聊天邏輯 ---
+        // --- 揪團與即時聊天邏輯 ---
         function initLocationSelect() {
             const select = document.getElementById('groupLocation');
             for (let loc in campusData) select.appendChild(new Option(loc, loc));
@@ -293,7 +318,7 @@
             box.appendChild(div);
         }
 
-        // 初始化
+        // 系統初始化
         window.onload = () => { 
             initMap();
             initLocationSelect(); 
