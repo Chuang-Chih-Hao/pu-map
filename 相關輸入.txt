@@ -1,0 +1,2 @@
+ngrok輸入
+ngrok http --domain=nonportentously-subdermal-buster.ngrok-free.dev 5000
