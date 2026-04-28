@@ -18,14 +18,16 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# --- 1. 金鑰安全設定 (從環境變數讀取) ---
-GOOGLE_MAPS_API_KEY = os.environ.get("Maps_API_KEY")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+import os # 如果最上面沒有 import os，記得補上
 
-if not GOOGLE_MAPS_API_KEY:
-    print("⚠️ 警告：找不到 GOOGLE_MAPS_API_KEY 環境變數！地圖可能無法顯示。")
+# --- 1. 金鑰設定 ---
+GOOGLE_MAPS_API_KEY = "AIzaSyBVas_ZbdGfz7-DM-IU9sd6TGw0cyKRlW0"
+
+# 安全取用金鑰：優先從環境變數拿，拿不到才回傳 None
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") 
+
 if not GEMINI_API_KEY:
-    print("⚠️ 嚴重警告：找不到 GEMINI_API_KEY 環境變數！AI 導航功能將無法運作。")
+    print("⚠️ 嚴重警告：系統找不到 GEMINI_API_KEY 環境變數！AI 功能將無法啟動。")
 
 # --- 2. AI 模型自動偵測 ---
 model = None
