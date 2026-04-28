@@ -139,7 +139,6 @@
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap" async defer></script>
     <script>
-        // ✅ 修正重點：確保宣告了 userMarker
         let map, currentMarker, directionsRenderer, directionsService, infoWindow, userMarker;
         const campusData = {{ locations | tojson | safe }};
         const socket = io();
@@ -159,23 +158,34 @@
             trackUserLocation();
         }
 
-        // --- 核心定位功能 ---
+        // --- 核心定位功能 (增強除錯版) ---
         function trackUserLocation() {
+            console.log("📍 [除錯] 開始呼叫 trackUserLocation");
+            
             if (navigator.geolocation) {
+                console.log("📍 [除錯] 瀏覽器支援 Geolocation API");
+                
                 navigator.geolocation.watchPosition((position) => {
+                    console.log("📍 [除錯] 成功獲取座標！", position.coords.latitude, position.coords.longitude);
+                    
                     const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
                     if (!userMarker) {
                         userMarker = new google.maps.Marker({
                             position: userPos, map: map,
                             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 },
-                            title: "你的位置"
+                            title: "你的位置",
+                            zIndex: 999
                         });
+                        console.log("📍 [除錯] 藍點建立成功！");
                     } else {
                         userMarker.setPosition(userPos);
                     }
                 }, (error) => {
-                    console.warn("定位失敗原因：", error.message);
-                }, { enableHighAccuracy: true, timeout: 10000 });
+                    console.error("❌ [除錯] 定位失敗！代碼:", error.code, "訊息:", error.message);
+                    if (error.code === 1) alert("請允許網站存取您的位置，以啟用導航功能！");
+                }, { enableHighAccuracy: true });
+            } else {
+                console.error("❌ [除錯] 您的瀏覽器不支援定位功能");
             }
         }
 
