@@ -7,349 +7,213 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <style>
         :root { --primary-blue: #1a73e8; --accent-red: #d93025; --bg-gray: #f0f2f5; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; background-color: var(--bg-gray); margin: 0; padding: 20px; color: #333; }
+        body { font-family: sans-serif; text-align: center; background-color: var(--bg-gray); margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        
-        /* 導覽列 */
-        .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
-        .top-nav a { padding: 10px 22px; background: white; color: #555; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 14px; border: 1px solid #ddd; transition: 0.2s; }
-        .top-nav a:hover { border-color: var(--primary-blue); color: var(--primary-blue); transform: translateY(-2px); }
-        h1 { color: var(--primary-blue); margin: 0 0 25px 0; font-size: 28px; }
-
-        /* 搜尋與快速標籤 */
-        .search-section { margin-bottom: 25px; }
-        .search-box { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
-        input[type="text"] { padding: 14px; width: 60%; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; transition: 0.2s; }
-        input[type="text"]:focus { border-color: var(--primary-blue); }
-        .btn-primary { padding: 14px 28px; background: var(--primary-blue); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        
-        .quick-tags { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        .quick-tags button { background: #e8f0fe; color: var(--primary-blue); border: 1px solid #d2e3fc; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; }
-        .quick-tags button:hover { background: var(--primary-blue); color: white; }
-
-        /* 主版面 */
-        .main-layout { display: flex; gap: 25px; margin-bottom: 35px; text-align: left; }
-        #map-container { flex: 2; position: relative; }
-        #map { height: 550px; width: 100%; border-radius: 15px; border: 1px solid #eee; }
-        
-        /* ✅ 原生定位按鈕樣式 */
-        .custom-map-control { background-color: #fff; border: 0; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; margin-right: 10px; margin-bottom: 25px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
-        .custom-map-control:hover { background-color: #f1f1f1; }
-        .custom-map-control svg { fill: #666; width: 24px; height: 24px; }
-
-        /* 右側面板 (揪團與聊天) */
-        .sidebar-panel { flex: 1; background: #fafafa; border: 1px solid #eee; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; height: 510px; position: relative; }
-        
-        /* 揪團清單視圖 */
-        #groupView { display: flex; flex-direction: column; height: 100%; }
-        .group-list { max-height: 380px; overflow-y: auto; padding-right: 8px; margin-bottom: 15px; flex-grow: 0; }
-        .group-list::-webkit-scrollbar { width: 6px; }
-        .group-list::-webkit-scrollbar-track { background: transparent; }
-        .group-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-        .group-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
-
-        .group-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid var(--accent-red); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .group-card strong { display: block; font-size: 16px; color: #222; margin-bottom: 5px; }
-        .group-actions { display: flex; gap: 8px; margin-top: 12px; }
-        .btn-sm { flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-sm-nav { background: #e8f0fe; color: var(--primary-blue); }
-        .btn-sm-chat { background: #fff3cd; color: #856404; }
-
-        /* 發起揪團表單 */
-        .create-group-box { border-top: 1px solid #eee; padding-top: 15px; margin-top: auto; }
-
-        /* 聊天室視圖 */
-        #chatView { display: none; flex-direction: column; height: 100%; background: white; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
-        .chat-header { background: var(--accent-red); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .chat-header button { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;}
-        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fdfdfd; }
-        .msg-bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; max-width: 85%; line-height: 1.4; }
-        .msg-self { align-self: flex-end; background: var(--primary-blue); color: white; border-bottom-right-radius: 4px; }
-        .msg-other { align-self: flex-start; background: #f0f0f0; color: #333; border-bottom-left-radius: 4px; }
-        .chat-input { display: flex; padding: 12px; gap: 8px; border-top: 1px solid #eee; }
-        .chat-input input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
-        .chat-input button { padding: 0 18px; background: var(--primary-blue); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
-
-        /* 靜態圖片區 */
-        .campus-img-section { border-top: 2px solid #eee; padding-top: 40px; margin-top: 20px; text-align: center;}
-        .campus-img-section img { width: 100%; max-width: 700px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        @media (max-width: 900px) { .main-layout { flex-direction: column; } #map { height: 400px; } .sidebar-panel { height: auto; min-height: 500px; } input[type="text"] { width: 50%; } }
+        .search-box { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { padding: 14px; width: 60%; border: 2px solid #eee; border-radius: 12px; font-size: 16px; outline: none; }
+        .btn-primary { padding: 14px 28px; background: var(--primary-blue); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .main-layout { display: flex; gap: 20px; text-align: left; }
+        #map { height: 500px; flex: 2; border-radius: 15px; border: 1px solid #eee; }
+        .sidebar-panel { flex: 1; background: #fafafa; border-radius: 15px; padding: 15px; height: 500px; display: flex; flex-direction: column; }
+        .group-list { max-height: 380px; overflow-y: auto; flex-grow: 0; margin-bottom: 10px; }
+        .group-card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--accent-red); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .chat-view { display: none; flex-direction: column; height: 100%; background: white; border-radius: 12px; }
+        .campus-img { margin-top: 30px; text-align: center; }
+        .campus-img img { width: 100%; max-width: 700px; border-radius: 15px; }
+        .custom-map-control { background: #fff; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="top-nav">
-            <a href="https://www.pu.edu.tw/index.php" target="_blank">🎓 靜宜大學首頁</a>
-            <a href="https://alcat.pu.edu.tw/" target="_blank">💻 e校園服務網</a>
-        </div>
-        
         <h1>靜宜新生防迷路地圖 ＆ 揪團大廳</h1>
-        
-        <div class="search-section">
-            <div class="search-box">
-                <input type="text" id="roomInput" list="searchSuggestions" placeholder="輸入代碼(AK)、科系或想做的事" onkeypress="if(event.key === 'Enter') searchRoom()">
-                <datalist id="searchSuggestions"></datalist>
-                <button class="btn-primary" onclick="searchRoom()">帶我去</button>
-            </div>
-            <div class="quick-tags">
-                <button onclick="quickSearch('餐廳')">🍔 找餐廳</button>
-                <button onclick="quickSearch('宿舍')">🛏️ 找宿舍</button>
-                <button onclick="quickSearch('圖書館')">📚 圖書館</button>
-                <button onclick="quickSearch('體育館')">🏀 運動</button>
-            </div>
+        <div class="search-box">
+            <input type="text" id="roomInput" list="searchSuggestions" placeholder="搜尋地點、科系或找餐廳/宿舍..." onkeypress="if(event.key === 'Enter') searchRoom()">
+            <datalist id="searchSuggestions"></datalist>
+            <button class="btn-primary" onclick="searchRoom()">帶我去</button>
         </div>
 
         <div class="main-layout">
-            <div id="map-container"><div id="map"></div></div>
-
+            <div id="map"></div>
             <div class="sidebar-panel">
-                
                 <div id="groupView">
-                    <h3>🔥 限時揪團 <span style="font-size: 12px; font-weight: normal; color: #888;">(30分後消失)</span></h3>
+                    <h3>🔥 限時揪團</h3>
                     <div class="group-list" id="groupList"></div>
-                    
-                    <div class="create-group-box">
-                        <input type="text" id="groupTitle" placeholder="標題：缺二打排球" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-                        <select id="groupLocation" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;"></select>
-                        <button style="width:100%; padding:12px; background:#34a853; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="createNewGroup()">📢 發起揪團</button>
-                    </div>
+                    <input type="text" id="groupTitle" placeholder="標題..." style="width:100%; padding:8px; margin-bottom:5px;">
+                    <select id="groupLocation" style="width:100%; padding:8px; margin-bottom:5px;"></select>
+                    <button style="width:100%; padding:10px; background:#34a853; color:white; border:none; border-radius:8px;" onclick="createNewGroup()">📢 發起揪團</button>
                 </div>
-
-                <div id="chatView">
-                    <div class="chat-header"><span id="chatTitle">聊天室</span><button onclick="leaveChat()">離開</button></div>
-                    <div class="chat-messages" id="chatMessages"></div>
-                    <div class="chat-input">
-                        <input type="text" id="chatInputMsg" placeholder="輸入訊息..." onkeypress="if(event.key === 'Enter') sendMessage()">
-                        <button onclick="sendMessage()">傳送</button>
+                <div id="chatView" class="chat-view">
+                    <div style="background:var(--accent-red); color:white; padding:10px; border-radius:8px 8px 0 0; display:flex; justify-content:space-between;">
+                        <span id="chatTitle">聊天室</span><button onclick="leaveChat()" style="background:none; border:none; color:white; cursor:pointer;">❌</button>
+                    </div>
+                    <div id="chatMessages" style="flex-grow:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:5px;"></div>
+                    <div style="display:flex; padding:10px; border-top:1px solid #eee;">
+                        <input type="text" id="chatInputMsg" style="flex:1; padding:8px; border-radius:20px; border:1px solid #ddd;" onkeypress="if(event.key === 'Enter') sendMessage()">
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="campus-img-section">
-            <h3 style="color: var(--primary-blue); margin-bottom: 20px;">📍 靜宜大學校園平面圖</h3>
-            <img src="{{ url_for('static', filename='map_in_PU.jpg') }}" alt="靜宜校園平面圖">
+        <div class="campus-img">
+            <h3>📍 靜宜大學校園平面圖</h3>
+            <img src="{{ url_for('static', filename='map_in_PU.jpg') }}" alt="校園圖">
         </div>
     </div>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap" async defer></script>
     <script>
-        let map, currentMarker, directionsRenderer, directionsService, infoWindow, userMarker;
+        let map, directionsRenderer, directionsService, infoWindow, userMarker;
+        let currentMarkers = []; // 改為陣列以存儲多個標記
         const campusData = {{ locations | tojson | safe }};
         const socket = io();
-        let currentGroupId = null;
         let myUsername = "新生_" + Math.floor(Math.random() * 1000);
+        let currentGroupId = null;
 
         function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), { 
-                zoom: 16, center: { lat: 24.2272, lng: 120.5810 }, 
-                mapTypeControl: false, styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }] 
-            });
+            map = new google.maps.Map(document.getElementById("map"), { zoom: 16, center: { lat: 24.2272, lng: 120.5810 }, mapTypeControl: false });
             infoWindow = new google.maps.InfoWindow();
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
-            
-            // 加入自定義「回到我的位置」按鈕
-            const centerControlDiv = createCenterControl(map);
-            map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
-
-            // 啟動使用者定位追蹤
             trackUserLocation();
+            initSearchSuggestions();
+            initLocationSelect();
+            fetchGroups();
         }
 
-        // --- 建立回到我的位置按鈕 ---
-        function createCenterControl(map) {
-            const controlDiv = document.createElement("div");
-            const controlUI = document.createElement("button");
-            controlUI.className = "custom-map-control";
-            controlUI.title = "回到我的位置";
-            controlUI.innerHTML = `
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-                </svg>
-            `;
-            controlDiv.appendChild(controlUI);
-            controlUI.addEventListener("click", () => {
-                if (userMarker) {
-                    map.panTo(userMarker.getPosition());
-                    map.setZoom(17);
-                } else {
-                    alert("目前還沒抓到您的定位，請確認是否已開啟 GPS。");
-                }
-            });
-            return controlDiv;
-        }
-
-        // --- 核心定位功能 (防消失防護版) ---
         function trackUserLocation() {
             if (navigator.geolocation) {
-                navigator.geolocation.watchPosition((position) => {
-                    const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    
+                navigator.geolocation.watchPosition(pos => {
+                    const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     if (!userMarker) {
-                        userMarker = new google.maps.Marker({
-                            position: userPos, 
-                            map: map,
-                            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 3 },
-                            title: "你的位置",
-                            zIndex: 9999
-                        });
-                    } else {
-                        userMarker.setPosition(userPos);
-                        if (userMarker.getMap() !== map) userMarker.setMap(map);
-                    }
-                }, (error) => {
-                    console.warn("定位失敗原因：", error.message);
-                }, { enableHighAccuracy: true, maximumAge: 0 });
+                        userMarker = new google.maps.Marker({ position: p, map: map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 } });
+                    } else userMarker.setPosition(p);
+                }, null, { enableHighAccuracy: true });
             }
         }
 
-        // --- 搜尋自動完成功能 ---
-        function initSearchSuggestions() {
-            const datalist = document.getElementById('searchSuggestions');
-            let suggestions = new Set();
-            for (let name in campusData) {
-                suggestions.add(name);
-                if (campusData[name].depts) campusData[name].depts.split(' ').forEach(k => suggestions.add(k));
-            }
-            suggestions.forEach(term => datalist.appendChild(new Option(term, term)));
-        }
-
-        function quickSearch(k) { document.getElementById('roomInput').value = k; searchRoom(); }
-
-        // --- 核心搜尋與導航邏輯 ---
+        // --- 核心修改：顯示多個結果 ---
         async function searchRoom() {
-            const input = document.getElementById('roomInput').value.trim();
+            const input = document.getElementById('roomInput').value.trim().toLowerCase();
             if (!input) return;
-            let targetName = null;
-            let isAiGenerated = false;
-            const searchStr = input.toLowerCase();
 
+            // 清除之前的標記
+            currentMarkers.forEach(m => m.setMap(null));
+            currentMarkers = [];
+
+            let results = [];
+            
+            // 找出所有符合條件的地點
             for (let name in campusData) {
-                const bldg = campusData[name];
-                if (name.toLowerCase().includes(searchStr) || 
-                   (bldg.desc && bldg.desc.toLowerCase().includes(searchStr)) || 
-                   (bldg.depts && bldg.depts.toLowerCase().includes(searchStr))) {
-                    targetName = name; break;
+                const loc = campusData[name];
+                const depts = (loc.depts || "").toLowerCase();
+                if (name.toLowerCase().includes(input) || depts.includes(input)) {
+                    results.push({ name, ...loc });
                 }
             }
 
-            if (!targetName) {
-                const btn = document.querySelector('.btn-primary');
-                btn.innerText = "🤖 AI 思考中...";
-                try {
-                    const res = await fetch('/api/ai_search', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ query: input }) });
-                    const data = await res.json();
-                    if(data.target) { targetName = data.target; isAiGenerated = true; }
-                } finally { btn.innerText = "帶我去"; }
-            }
-
-            if (targetName && campusData[targetName]) {
-                const loc = campusData[targetName];
-                if (currentMarker) currentMarker.setMap(null);
-                map.panTo({ lat: loc.lat, lng: loc.lng });
-                map.setZoom(18);
-                currentMarker = new google.maps.Marker({ position: { lat: loc.lat, lng: loc.lng }, map: map, animation: google.maps.Animation.DROP });
+            if (results.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
                 
-                const aiBadge = isAiGenerated ? '<span style="background-color:#ffeeba;font-size:12px;padding:2px 5px;border-radius:3px;margin-left:5px;">🤖 AI推薦</span>' : '';
-                infoWindow.setContent(`
-                    <div style="padding:10px; text-align:center; min-width:150px;">
-                        <h3 style="margin:0 0 5px 0;">${targetName} ${aiBadge}</h3>
-                        <p style="color:#666;font-size:13px;margin-bottom:10px;">${loc.desc || ''}</p>
-                        <button onclick="nav(${loc.lat},${loc.lng})" style="background:var(--primary-blue);color:white;border:none;padding:8px;border-radius:4px;cursor:pointer;width:100%;font-weight:bold;margin-bottom:8px;">🚶 規劃路線</button>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=walking" target="_blank" style="background:#34a853;color:white;text-decoration:none;padding:8px;border-radius:4px;display:block;font-size:12px;font-weight:bold;">📱 Google 地圖導航</a>
-                    </div>
-                `);
-                infoWindow.open(map, currentMarker);
-            } else { alert("找不到地點，請換個說法！"); }
+                results.forEach(loc => {
+                    const pos = { lat: loc.lat, lng: loc.lng };
+                    const marker = new google.maps.Marker({ position: pos, map: map, animation: google.maps.Animation.DROP, title: loc.name });
+                    
+                    marker.addListener('click', () => {
+                        infoWindow.setContent(`<div style="padding:10px; color:black;"><h3>${loc.name}</h3><p>${loc.desc || ''}</p><button onclick="nav(${loc.lat},${loc.lng})" style="background:#1a73e8; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; width:100%;">🚶 規劃路線</button></div>`);
+                        infoWindow.open(map, marker);
+                    });
+                    
+                    currentMarkers.push(marker);
+                    bounds.extend(pos);
+                });
+
+                // 如果結果大於一個，自動縮放地圖包圍所有點
+                if (results.length > 1) {
+                    map.fitBounds(bounds);
+                } else {
+                    map.panTo(results[0]);
+                    map.setZoom(18);
+                }
+            } else {
+                alert("找不到相關地點！");
+            }
         }
 
         function nav(lat, lng) {
-            if (!navigator.geolocation) return alert("您的設備不支援定位功能。");
             navigator.geolocation.getCurrentPosition(pos => {
                 directionsRenderer.setDirections({routes: []});
                 directionsService.route({
                     origin: { lat: pos.coords.latitude, lng: pos.coords.longitude },
                     destination: { lat: lat, lng: lng },
                     travelMode: 'WALKING'
-                }, (result, status) => {
-                    if (status === 'OK') { directionsRenderer.setDirections(result); infoWindow.close(); }
-                    else { alert("路線規劃失敗，代碼：" + status); }
-                });
-            }, () => alert("定位請求失敗，請確認已開啟 GPS"), { enableHighAccuracy: true });
+                }, (res, status) => { if (status === 'OK') directionsRenderer.setDirections(res); });
+            });
         }
 
-        // --- 揪團與即時聊天邏輯 ---
+        function initSearchSuggestions() {
+            const dl = document.getElementById('searchSuggestions');
+            let s = new Set(["餐廳", "宿舍", "子母車", "運動", "游泳池", "溜冰場"]);
+            for (let n in campusData) s.add(n);
+            s.forEach(t => dl.appendChild(new Option(t, t)));
+        }
+
         function initLocationSelect() {
-            const select = document.getElementById('groupLocation');
-            for (let loc in campusData) select.appendChild(new Option(loc, loc));
+            const s = document.getElementById('groupLocation');
+            for (let n in campusData) s.appendChild(new Option(n, n));
         }
 
         async function fetchGroups() {
-            if(currentGroupId) return;
             const res = await fetch('/api/groups');
-            const groups = await res.json();
-            const listDiv = document.getElementById('groupList');
-            listDiv.innerHTML = groups.length === 0 ? '<p style="text-align:center;color:#999;margin-top:40px;">目前大廳空空如也...</p>' : '';
-            groups.forEach(g => {
+            const data = await res.json();
+            const list = document.getElementById('groupList');
+            list.innerHTML = data.length ? '' : '<p style="color:#999;text-align:center;">暫無揪團</p>';
+            data.forEach(g => {
                 const card = document.createElement('div');
                 card.className = 'group-card';
-                card.innerHTML = `<strong>${g.title}</strong><small>📍 ${g.location}</small>
-                    <div class="group-actions">
-                        <button class="btn-sm btn-sm-nav" onclick="nav(${campusData[g.location].lat}, ${campusData[g.location].lng})">🚶 導航</button>
-                        <button class="btn-sm btn-sm-chat" onclick="openChat('${g.id}', '${g.title}')">💬 聊天</button>
-                    </div>`;
-                listDiv.appendChild(card);
+                card.innerHTML = `<strong>${g.title}</strong><br><small>📍 ${g.location}</small><div style="margin-top:5px;"><button onclick="nav(${campusData[g.location].lat},${campusData[g.location].lng})" style="padding:5px; background:#e8f0fe; border:none; border-radius:5px; cursor:pointer;">🚶 導航</button> <button onclick="openChat('${g.id}','${g.title}')" style="padding:5px; background:#fff3cd; border:none; border-radius:5px; cursor:pointer;">💬 聊天</button></div>`;
+                list.appendChild(card);
             });
         }
 
         async function createNewGroup() {
-            const title = document.getElementById('groupTitle').value.trim();
-            const location = document.getElementById('groupLocation').value;
-            if (!title || !location) return alert("請填寫標題與地點");
-            await fetch('/api/groups', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ title, location }) });
+            const t = document.getElementById('groupTitle').value;
+            const l = document.getElementById('groupLocation').value;
+            if (!t || !l) return;
+            await fetch('/api/groups', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ title: t, location: l }) });
             document.getElementById('groupTitle').value = ''; fetchGroups();
         }
 
-        function openChat(groupId, title) {
-            currentGroupId = groupId;
+        function openChat(id, title) {
+            currentGroupId = id;
             document.getElementById('groupView').style.display = 'none';
             document.getElementById('chatView').style.display = 'flex';
             document.getElementById('chatTitle').innerText = title;
-            document.getElementById('chatMessages').innerHTML = '';
-            socket.emit('join_chat', { group_id: groupId });
+            socket.emit('join_chat', { group_id: id });
         }
 
-        function leaveChat() { currentGroupId = null; document.getElementById('chatView').style.display = 'none'; document.getElementById('groupView').style.display = 'flex'; fetchGroups(); }
+        function leaveChat() { currentGroupId = null; document.getElementById('chatView').style.display = 'none'; document.getElementById('groupView').style.display = 'flex'; }
 
         function sendMessage() {
-            const input = document.getElementById('chatInputMsg');
-            if (!input.value.trim()) return;
-            socket.emit('send_message', { group_id: currentGroupId, username: myUsername, msg: input.value });
-            input.value = '';
+            const i = document.getElementById('chatInputMsg');
+            if (i.value && currentGroupId) {
+                socket.emit('send_message', { group_id: currentGroupId, username: myUsername, msg: i.value });
+                i.value = '';
+            }
         }
 
-        socket.on('chat_history', h => { const box = document.getElementById('chatMessages'); h.forEach(d => appendMessage(d)); box.scrollTop = box.scrollHeight; });
-        socket.on('receive_message', d => { appendMessage(d); const box = document.getElementById('chatMessages'); box.scrollTop = box.scrollHeight; });
-
-        function appendMessage(d) {
+        socket.on('receive_message', d => {
             const box = document.getElementById('chatMessages');
             const div = document.createElement('div');
             const isMe = d.user === myUsername;
-            div.className = `msg-bubble ${isMe ? 'msg-self' : 'msg-other'}`;
-            div.innerHTML = isMe ? d.msg : `<div style="font-size:10px;margin-bottom:3px;color:#888;">${d.user}</div>${d.msg}`;
-            box.appendChild(div);
-        }
-
-        // 系統初始化
-        window.onload = () => { 
-            initMap();
-            initLocationSelect(); 
-            initSearchSuggestions(); 
-            fetchGroups(); 
-            setInterval(fetchGroups, 15000); 
-        };
+            div.style.alignSelf = isMe ? 'flex-end' : 'flex-start';
+            div.style.background = isMe ? '#1a73e8' : '#eee';
+            div.style.color = isMe ? 'white' : 'black';
+            div.style.padding = '8px'; div.style.borderRadius = '10px'; div.style.maxWidth = '80%';
+            div.innerHTML = `<small style="font-size:10px; display:block;">${d.user}</small>${d.msg}`;
+            box.appendChild(div); box.scrollTop = box.scrollHeight;
+        });
+        
+        setInterval(fetchGroups, 15000);
     </script>
 </body>
 </html>
