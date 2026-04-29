@@ -32,7 +32,7 @@
         #map-container { flex: 2; position: relative; }
         #map { height: 550px; width: 100%; border-radius: 15px; border: 1px solid #eee; }
         
-        /* ✅ 原生定位按鈕樣式 (已恢復) */
+        /* 原生定位按鈕樣式 */
         .custom-map-control { background-color: #fff; border: 0; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; margin-right: 10px; margin-bottom: 25px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
         .custom-map-control:hover { background-color: #f1f1f1; }
         .custom-map-control svg { fill: #666; width: 24px; height: 24px; }
@@ -105,11 +105,9 @@
             <div id="map-container"><div id="map"></div></div>
 
             <div class="sidebar-panel">
-                
                 <div id="groupView">
                     <h3>🔥 限時揪團 <span style="font-size: 12px; font-weight: normal; color: #888;">(30分後消失)</span></h3>
                     <div class="group-list" id="groupList"></div>
-                    
                     <div class="create-group-box">
                         <input type="text" id="groupTitle" placeholder="標題：缺二打排球" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
                         <select id="groupLocation" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;"></select>
@@ -137,7 +135,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap" async defer></script>
     <script>
         let map, directionsRenderer, directionsService, infoWindow, userMarker;
-        let currentMarkers = []; // 支援多重標記的陣列
+        let currentMarkers = []; 
         const campusData = {{ locations | tojson | safe }};
         const socket = io();
         let currentGroupId = null;
@@ -152,18 +150,15 @@
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
             
-            // ✅ 恢復：加入自定義「回到我的位置」按鈕
             const centerControlDiv = createCenterControl(map);
             map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(centerControlDiv);
 
-            // 啟動使用者定位追蹤
             trackUserLocation();
             initSearchSuggestions();
             initLocationSelect();
             fetchGroups();
         }
 
-        // ✅ 恢復：建立回到我的位置按鈕邏輯
         function createCenterControl(map) {
             const controlDiv = document.createElement("div");
             const controlUI = document.createElement("button");
@@ -186,7 +181,6 @@
             return controlDiv;
         }
 
-        // 核心定位功能 (防消失版)
         function trackUserLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition((position) => {
@@ -207,7 +201,7 @@
 
         function initSearchSuggestions() {
             const datalist = document.getElementById('searchSuggestions');
-            let suggestions = new Set(["餐廳", "宿舍", "運動", "子母車", "圖書館"]);
+            let suggestions = new Set(["餐廳", "宿舍", "運動", "子母車", "圖書館", "游泳池", "溜冰場"]);
             for (let name in campusData) {
                 suggestions.add(name);
                 if (campusData[name].depts) campusData[name].depts.split(' ').forEach(k => suggestions.add(k));
@@ -217,17 +211,18 @@
 
         function quickSearch(k) { document.getElementById('roomInput').value = k; searchRoom(); }
 
-        // --- 核心修改：顯示多個結果與跳轉按鈕 ---
         async function searchRoom() {
             const input = document.getElementById('roomInput').value.trim().toLowerCase();
             if (!input) return;
+
+            // ✅ 修復重點：每次搜尋新地點前，先清除地圖上已規劃的路徑
+            directionsRenderer.setDirections({routes: []});
 
             // 清除之前的標記
             currentMarkers.forEach(m => m.setMap(null));
             currentMarkers = [];
             let results = [];
 
-            // 本地多點搜尋
             for (let name in campusData) {
                 const loc = campusData[name];
                 const depts = (loc.depts || "").toLowerCase();
@@ -237,7 +232,6 @@
                 }
             }
 
-            // AI 語意搜尋 (如果本地找不到)
             if (results.length === 0) {
                 const btn = document.querySelector('.btn-primary');
                 btn.innerText = "🤖 AI 思考中...";
@@ -250,20 +244,14 @@
                 } finally { btn.innerText = "帶我去"; }
             }
 
-            // 繪製標記與視窗
             if (results.length > 0) {
                 const bounds = new google.maps.LatLngBounds();
-                
                 results.forEach(loc => {
                     const pos = { lat: loc.lat, lng: loc.lng };
                     const marker = new google.maps.Marker({ position: pos, map: map, animation: google.maps.Animation.DROP, title: loc.name });
-                    
                     marker.addListener('click', () => {
                         const aiBadge = loc.isAi ? '<span style="background-color:#ffeeba;font-size:12px;padding:2px 5px;border-radius:3px;margin-left:5px;">🤖 AI推薦</span>' : '';
-                        
-                        // ✅ 恢復：精準且官方的 Google Maps App 跳轉網址
                         const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=walking`;
-
                         infoWindow.setContent(`
                             <div style="padding:10px; text-align:center; min-width:150px; color:black;">
                                 <h3 style="margin:0 0 5px 0;">${loc.name} ${aiBadge}</h3>
@@ -274,21 +262,13 @@
                         `);
                         infoWindow.open(map, marker);
                     });
-                    
                     currentMarkers.push(marker);
                     bounds.extend(pos);
                 });
 
-                // 自動縮放包圍全部點
-                if (results.length > 1) {
-                    map.fitBounds(bounds);
-                } else {
-                    map.panTo({ lat: results[0].lat, lng: results[0].lng });
-                    map.setZoom(18);
-                }
-            } else { 
-                alert("找不到相關地點，請換個說法！"); 
-            }
+                if (results.length > 1) map.fitBounds(bounds);
+                else { map.panTo({ lat: results[0].lat, lng: results[0].lng }); map.setZoom(18); }
+            } else { alert("找不到地點，請換個說法！"); }
         }
 
         function nav(lat, lng) {
@@ -303,10 +283,9 @@
                     if (status === 'OK') { directionsRenderer.setDirections(result); infoWindow.close(); }
                     else { alert("路線規劃失敗，代碼：" + status); }
                 });
-            }, () => alert("定位請求失敗，請確認已開啟 GPS"), { enableHighAccuracy: true });
+            }, () => alert("定位請求失敗"), { enableHighAccuracy: true });
         }
 
-        // --- 揪團與即時聊天邏輯 ---
         function initLocationSelect() {
             const select = document.getElementById('groupLocation');
             for (let loc in campusData) select.appendChild(new Option(loc, loc));
@@ -370,6 +349,9 @@
 
         window.onload = () => { 
             initMap();
+            initLocationSelect(); 
+            initSearchSuggestions(); 
+            fetchGroups(); 
             setInterval(fetchGroups, 15000); 
         };
     </script>
